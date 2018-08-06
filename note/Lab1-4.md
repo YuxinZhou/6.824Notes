@@ -9,7 +9,7 @@
 那么我们什么时候可以关闭todo信道呢？从前面的分析可以知道，必须要等到没有代办的任务之后，我们才可以关闭它，也就是说，要等到所有
 tasks都成功执行才可以。怎么知道所有任务都被执行了呢？ 这就可以用我们在task3中用到的`var tasks sync.WaitGroup`
 
-局部code：
+Code Snippet：
 
 ```go
 	var tasks sync.WaitGroup // wait until all the goroutine has done
