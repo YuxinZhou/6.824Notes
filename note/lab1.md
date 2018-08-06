@@ -35,11 +35,12 @@ schedule负责给worker分配任务，任务的列表由arg给出, 目前空闲�
 	fmt.Printf("Schedule: %v done\n", phase)
 ```
 
-但是我们发现以上代码并不能通过测试用例。观察log输出，我们发现第19个任务执行完毕之后，程序就stuck住了。 那么为什么最后一个任务没有能成功执行呢？其实，观察日志我们可以发现，最后一个goroutine的`call(rpcAddress, "Worker.DoTask", taskArg, nil)`是被执行了， 但代码被阻塞在了 `registerChan <- rpcAddress` 这一行， 而`tasks.Done()`没有被执行，所以主进程也就没有退出。
+但是我们发现以上代码并不能通过测试用例。观察log输出，我们发现第19个任务执行完毕之后，程序就stuck住了。 那么为什么最后一个任务没有能成功执行呢？其实，观察日志我们可以发现，最后一个goroutine的`call(rpcAddress, "Worker.DoTask", taskArg, nil)`是被执行了， 但代码被阻塞在了 `registerChan <- rpcAddress` 这一行，因而`tasks.Done()`没有被执行，所以主进程也就没有退出。
 
 为什么往registerChan存消息会阻塞goroutine呢？ 这是因为registerChan是一个无缓冲的信道，它的存消息和取消息都是阻塞的。也就是说, 无缓冲的信道在取消息和存消息的时候都会挂起当前的goroutine，除非另一端已经准备好。 所以当最后一个goroutine往registerChan存入消息时，由于没人将这个消息取走，所以最后一个任务被阻塞住了。而对于前19个任务，因为他们存入registerChan的消息都被后来的进程取走，所以他们都执行完毕并退出了。
 
-参考[Go语言的goroutines、信道和死锁goroutine](https://blog.csdn.net/smilesundream/article/details/80209026）
+参考 [Go语言的goroutines、信道和死锁goroutine](https://blog.csdn.net/smilesundream/article/details/80209026)
+
 
 一个简单的修改办法：
 
