@@ -8,7 +8,7 @@ schedule负责给worker分配任务，任务的列表由arg给出, 目前空闲�
 里取一个worker，并且通过RPC把任务分配给他，然后等待返回。任务结束后，由于这个worker又变回空闲状态，我们把它放回registerChan。
 那么怎么保证主进程在所有的go routine完成任务之后才退出呢？在python里我们有p.wait(), 在这里我们可以用sync.WaitGroup: 我们初始化一个
 名叫tasks的sync.WaitGroup变量，告诉他总共有n个任务要做。 然后每个go routine 完成一个任务后，就把tasks减一。等到tasks变成0的时候，
-我们的主进程就知道它可以退出了。简单来说，sync.WaitGroup就像(或者说就是？)一个可以在进程之间共享的变量。
+我们的主进程就知道它可以退出了。简单来说，sync.WaitGroup就像一个可以在进程之间共享的变量。
 
 根据这个思路, 我们实现第一个版本的代码。 
 
